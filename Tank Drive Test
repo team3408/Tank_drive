@@ -1,0 +1,97 @@
+
+//includes the WPI library
+#include "WPILib.h" 
+//allows us to do math
+#include <math.h>
+/**
+ * This is a demo program showing the use of the RobotBase class.
+ * The SimpleRobot class is the base of a robot application that will automatically call your
+ * Autonomous and OperatorControl methods at the right time as controlled by the switches on
+ * the driver station or the field controls.
+ */ 
+class RobotDemo : public IterativeRobot {
+	//states all the variables that we will initiate later
+	RobotDrive * myRobot; // robot drive system
+	Joystick * stick ;
+	Talon * FL;
+	Talon * FR;
+	Talon * BL;
+	Talon * BR;
+	float left;
+	float right;
+public:
+
+	RobotDemo(){
+		// these must be initialized in the same order as the area above
+		
+		stick = new Joystick(1);
+		FL = new Talon(2);
+		FR = new Talon(1);
+		BL = new Talon(3);
+		BR = new Talon(4);
+		myRobot = new RobotDrive(FL,FR,BL,BR);
+	
+		
+
+	}
+
+	/**
+	 * Drive left & right motors for 2 seconds then stop
+	 */
+	void Autonomous()
+	{
+		//won't let the robot shutdown in the event of an emergency
+		myRobot->SetSafetyEnabled(false);
+		
+		// drive forwards half speed
+		//we have to use (->) to reidentify the pinters so that they have a value and can be run
+		FL->Set(-0.5);
+		FR->Set(0.5);
+		BL->Set(-0.5);
+		BR->Set(0.5);
+		
+		Wait(2.0); 				//    for 2 seconds
+		myRobot->Drive(0.0, 0.0); 	// stop robot
+	}
+
+	/**
+	 * Runs the motors with arcade steering. 
+	 */
+	void OperatorControl()
+	{ 
+		//allows the robot to save itself in the event of an emergency
+		myRobot->SetSafetyEnabled(false);
+		while (IsOperatorControl())
+		{
+			
+			//use ports 2, 4 for operations involving the y axis
+			left = stick->GetRawAxis(2);
+			right = stick->GetRawAxis(4);
+			
+			//allows the robot to invert the motors so that we don't go backwards
+			FL->Set(-left);
+			FR->Set(-right);
+			BL->Set(-left);
+			BR->Set(-right);
+			
+			FL ->SetExpiration(0.100);
+			FR ->SetExpiration(0.100);
+			BL ->SetExpiration(0.100);
+			BR ->SetExpiration(0.100);
+			
+			//resets after each 1 millisecond
+			Wait(0.005);
+			
+		}
+	}
+	
+	/**
+	 * Runs during test mode
+	 */
+	void Test() {
+
+	}
+};
+
+START_ROBOT_CLASS(RobotDemo);
+
